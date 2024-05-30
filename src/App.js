@@ -1,13 +1,19 @@
 import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 import './App.css';
+import Page1 from './page1';
+import Page2 from './page2';
+import Page3 from './page3';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Welcome to React</h1>
-        <p>節食計畫失敗</p>
-      </header>
+    <div className='App'>
+      <h1>Hello</h1>
+      <Routes>
+        <Route path='/' element={<Page1 />} />
+        <Route path='/page2' element={<Page2 />} />
+        <Route path='/page3' element={<Page3 />} />
+      </Routes>
     </div>
   );
 }
