@@ -2,55 +2,28 @@ import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
 import { useNavigate } from 'react-router-dom';
 
-function Page2() {
+function App() {
   const [apiKey, setApiKey] = useState('');
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
-  const [selectedImage, setSelectedImage] = useState(null);
   const chatHistoryRef = useRef(null);
   let thread = [];
 
   const navigate = useNavigate();
 
   const handleNavigate = () => {
-    navigate('/');
+    navigate('/page2');
   };
 
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedImage(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+
 
   const sendMessage = () => {
-    if (!message.trim() && !selectedImage) return;
+    if (!message.trim()) return;
 
-    setChatHistory(prevHistory => [
-      ...prevHistory,
-      { author: 'You', text: message, image: selectedImage },
-    ]);
-
-    const parts = [];
-    if (message.trim()) {
-      parts.push({ text: message });
-    }
-    if (selectedImage) {
-      parts.push({
-        inline_data: {
-          mime_type: selectedImage.split(';')[0].split(':')[1],
-          data: selectedImage.split(',')[1],
-        },
-      });
-    }
-
-    thread.push({ role: 'user', parts });
-
-    fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${apiKey}`, {
+    setChatHistory(prevHistory => [...prevHistory, { author: 'You', text: message }]);
+    thread.push({ role: 'user', parts: [{ text: message }] });
+    console.log(thread);
+    fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -62,6 +35,7 @@ function Page2() {
         const msg = data.candidates[0].content.parts[0].text;
         setChatHistory(prevHistory => [...prevHistory, { author: 'Bot', text: msg }]);
         thread.push({ role: 'model', parts: [{ text: msg }] });
+        console.log(thread);
       })
       .catch(error => {
         console.error('Error:', error);
@@ -69,7 +43,6 @@ function Page2() {
       });
 
     setMessage('');
-    setSelectedImage(null);
   };
 
   const handleKeyDown = (e) => {
@@ -88,14 +61,14 @@ function Page2() {
   const handleResetConversation = () => {
     setChatHistory([]);
   };
-
   return (
     <div className="App">
       <div style={{ marginBottom: '1rem' }}>
-        <button className="reset-button" onClick={handleNavigate}>文字模式</button>
+        <button className="reset-button" onClick={handleNavigate}>圖片模式</button>
+
       </div>
 
-      <h1>Gemini API 图片模式</h1>
+      <h1>Gemini API 陪聊</h1>
 
       <div id="chatHistory" ref={chatHistoryRef}>
         {chatHistory.map((chat, index) => (
@@ -105,11 +78,6 @@ function Page2() {
               className="message"
               dangerouslySetInnerHTML={{ __html: chat.text }}
             />
-            {chat.image && (
-              <div className="image-container">
-                <img src={chat.image} alt="Uploaded" style={{ maxHeight: '100px', width: 'auto' }} />
-              </div>
-            )}
           </div>
         ))}
       </div>
@@ -123,12 +91,13 @@ function Page2() {
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <input type="file" accept="image/*" onChange={handleImageUpload} />
         <button className="send-button" onClick={sendMessage}>Send</button>
         <button className="reset-button" onClick={handleResetConversation}>↻</button>
       </div>
+
     </div>
+
   );
 }
 
-export default Page2;
+export default App;
