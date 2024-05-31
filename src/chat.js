@@ -67,8 +67,8 @@ function App() {
         <button className="reset-button" onClick={handleNavigate}>圖片模式</button>
 
       </div>
+      <a href='https://emtech.cc/post/gemini-api/'><h1 h>Gemini API 陪聊</h1></a>
 
-      <h1>Gemini API 陪聊</h1>
 
       <div id="chatHistory" ref={chatHistoryRef}>
         {chatHistory.map((chat, index) => (
