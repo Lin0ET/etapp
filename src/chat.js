@@ -7,7 +7,7 @@ function App() {
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
   const chatHistoryRef = useRef(null);
-  let thread = [];
+  let thread = useRef([]);
 
   const navigate = useNavigate();
 
@@ -20,22 +20,24 @@ function App() {
   const sendMessage = () => {
     if (!message.trim()) return;
 
-    setChatHistory(prevHistory => [...prevHistory, { author: 'You', text: message }]);
-    thread.push({ role: 'user', parts: [{ text: message }] });
-    console.log(thread);
+    const userMessage = { author: 'You', text: message };
+    setChatHistory(prevHistory => [...prevHistory, userMessage]);
+    thread.current.push({ role: 'user', parts: [{ text: message }] });
+    console.log(thread.current);
+
     fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ contents: thread }),
+      body: JSON.stringify({ contents: thread.current }),
     })
       .then(response => response.json())
       .then(data => {
-        const msg = data.candidates[0].content.parts[0].text;
-        setChatHistory(prevHistory => [...prevHistory, { author: 'Bot', text: msg }]);
-        thread.push({ role: 'model', parts: [{ text: msg }] });
-        console.log(thread);
+        const botMessage = data.candidates[0].content.parts[0].text;
+        setChatHistory(prevHistory => [...prevHistory, { author: 'Bot', text: botMessage }]);
+        thread.current.push({ role: 'model', parts: [{ text: botMessage }] });
+        console.log(thread.current);
       })
       .catch(error => {
         console.error('Error:', error);
@@ -60,7 +62,9 @@ function App() {
 
   const handleResetConversation = () => {
     setChatHistory([]);
+    thread.current = [];
   };
+  
   return (
     <div className="App">
       <div style={{ marginBottom: '1rem' }}>
